@@ -9,7 +9,7 @@ type NodeTestCase struct {
 	content    string
 	tag        string
 	children   []*NodeTestCase
-	Attributes map[string]interface{}
+	attributes map[string]interface{}
 }
 
 func (tc *NodeTestCase) CompareNode(t *testing.T, node *Node) {
@@ -25,8 +25,8 @@ func (tc *NodeTestCase) CompareNode(t *testing.T, node *Node) {
 		t.Errorf("Tag: %s, expected: %s", node.Tag, tc.tag)
 	}
 
-	if tc.Attributes != nil && !reflect.DeepEqual(tc.Attributes, node.Attributes) {
-		t.Errorf("Attributes: %#v, expected: %#v\n", node.Attributes, tc.Attributes)
+	if tc.attributes != nil && !reflect.DeepEqual(tc.attributes, node.Attributes) {
+		t.Errorf("Attributes: %#v, expected: %#v\n", node.Attributes, tc.attributes)
 	}
 
 	for i, child := range tc.children {
@@ -255,20 +255,20 @@ func TestParseAttributes(t *testing.T) {
 	root := ParseHTML(html)
 	expectedRoot := NodeTestCase{
 		tag: "div",
-		Attributes: map[string]interface{}{
+		attributes: map[string]interface{}{
 			"style": "display: flex; flex-flow: row wrap;",
 		},
 		children: []*NodeTestCase{
 			{
 				tag:     "p",
 				content: `I'm red!`,
-				Attributes: map[string]interface{}{
+				attributes: map[string]interface{}{
 					"style": "color: red;",
 				},
 			},
 			{
 				tag: "img",
-				Attributes: map[string]interface{}{
+				attributes: map[string]interface{}{
 					"src":   "https://draxe.com/wp-content/uploads/2018/10/WakameHeader.jpg",
 					"class": "img-class",
 					"alt":   "Wakame photo",

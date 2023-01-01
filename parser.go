@@ -5,30 +5,26 @@ import (
 	"strings"
 )
 
-type Node struct {
-	Tag        string
-	Content    string
-	Parent     *Node
-	Children   []*Node
-	Attributes map[string]interface{}
-}
-
+// ParseHTML parses a HTML string and returns a tree structure of Node objects representing the HTML nodes
 func ParseHTML(html string) *Node {
+	// Remove newlines and tabs from HTML string
 	html = strings.ReplaceAll(html, "\n", "")
 	html = strings.ReplaceAll(html, "\t", "")
 
+	// Initialize root node and pivot node
 	root := &Node{
 		Parent:   nil,
 		Children: nil,
 	}
-
 	rootInit := false
 	pivot := &root
 
+	// Initialize variables for parsing
 	i := 0
 	tag := ""
 	content := ""
 
+	// Loop through each character in HTML string
 	for i < len(html) {
 		// Tag begin
 		if html[i] == '<' && html[i+1] != '/' {
@@ -39,6 +35,7 @@ func ParseHTML(html string) *Node {
 				i++
 			}
 
+			// Check if tag is self-closing
 			selfClosing := tag[len(tag)-1:] == "/"
 			if selfClosing {
 				tag = strings.TrimSpace(tag[:len(tag)-1])
@@ -59,6 +56,7 @@ func ParseHTML(html string) *Node {
 				attributes[key] = val
 			}
 
+			// Create new child node for pivot node
 			if !rootInit {
 				(*pivot).Tag = tagType
 				(*pivot).Attributes = attributes

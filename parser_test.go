@@ -2,6 +2,30 @@ package wakame
 
 import "testing"
 
+type NodeTestCase struct {
+	content  string
+	tag      string
+	children []*NodeTestCase
+}
+
+func (tc *NodeTestCase) CompareNode(t *testing.T, node *Node) {
+	if tc.content != node.Content {
+		t.Errorf("Content: %s, expected: %s", node.Content, tc.content)
+	}
+
+	if len(tc.children) != len(node.Children) {
+		t.Errorf("Number of children: %d, expected: %d", len(tc.children), len(node.Children))
+	}
+
+	if tc.tag != node.Tag {
+		t.Errorf("Tag: %s, expected: %s", node.Tag, tc.tag)
+	}
+
+	for i, child := range tc.children {
+		child.CompareNode(t, node.Children[i])
+	}
+}
+
 func TestDepthLevelOne(t *testing.T) {
 	html := `
 		<div>
@@ -11,31 +35,166 @@ func TestDepthLevelOne(t *testing.T) {
 		</div>
 	`
 
+	expectedRoot := NodeTestCase{
+		tag: "div",
+		children: []*NodeTestCase{
+			{
+				tag:     "p",
+				content: "Hello world",
+			},
+			{
+				tag:     "p",
+				content: "Goodbye world",
+			},
+			{
+				tag:     "p",
+				content: "Wakame prototype",
+			},
+		},
+	}
+
 	root := ParseHTML(html)
+	expectedRoot.CompareNode(t, root)
+}
 
-	if root.Tag != "div" {
-		t.Error("Wrong root tag")
+func TestDepthLevelTwo(t *testing.T) {
+	html := `
+		<div>
+			<div>
+				<p>depth two</p>
+			</div>
+			<p>Hello world</p>
+			<p>Goodbye world</p>
+			<p>Wakame prototype</p>
+		</div>
+	`
+
+	expectedRoot := NodeTestCase{
+		tag: "div",
+		children: []*NodeTestCase{
+			{
+				tag: "div",
+				children: []*NodeTestCase{
+					{
+						tag:     "p",
+						content: "depth two",
+					},
+				},
+			},
+			{
+				tag:     "p",
+				content: "Hello world",
+			},
+			{
+				tag:     "p",
+				content: "Goodbye world",
+			},
+			{
+				tag:     "p",
+				content: "Wakame prototype",
+			},
+		},
 	}
 
-	if len(root.Children) != 3 {
-		t.Error("Wrong children len")
+	root := ParseHTML(html)
+	expectedRoot.CompareNode(t, root)
+}
+
+func TestDepthLevelThree(t *testing.T) {
+	html := `
+		<div>
+			<div>
+				<p>depth two</p>
+			</div>
+			<p>
+				<strong>Hello world</strong>
+			</p>
+			<p>Goodbye world</p>
+			<div>
+				<h1>Title</h1>
+				<p>Wakame prototype</p>
+			</div>
+
+			<footer>
+				<div>
+					<ul>
+						<li>Item 1</li>
+						<li>Item 2</li>
+						<li>Item 3</li>
+					</ul>
+				</div>
+			</footer>
+		</div>
+	`
+
+	expectedRoot := NodeTestCase{
+		tag: "div",
+		children: []*NodeTestCase{
+			{
+				tag: "div",
+				children: []*NodeTestCase{
+					{
+						tag:     "p",
+						content: "depth two",
+					},
+				},
+			},
+			{
+				tag: "p",
+				children: []*NodeTestCase{
+					{
+						tag:     "strong",
+						content: "Hello world",
+					},
+				},
+			},
+			{
+				tag:     "p",
+				content: "Goodbye world",
+			},
+			{
+				tag: "div",
+				children: []*NodeTestCase{
+					{
+						tag:     "h1",
+						content: "Title",
+					},
+					{
+						tag:     "p",
+						content: "Wakame prototype",
+					},
+				},
+			},
+			{
+				tag: "footer",
+				children: []*NodeTestCase{
+					{
+						tag: "div",
+						children: []*NodeTestCase{
+							{
+								tag: "ul",
+								children: []*NodeTestCase{
+									{
+										tag:     "li",
+										content: "Item 1",
+									},
+									{
+										tag:     "li",
+										content: "Item 2",
+									},
+									{
+										tag:     "li",
+										content: "Item 3",
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+		},
 	}
 
-	for _, child := range root.Children {
-		if child.Tag != "p" {
-			t.Error("Wrong child tag")
-		}
-	}
-
-	if root.Children[0].Content != "Hello world" {
-		t.Error("Wrong child content")
-	}
-
-	if root.Children[1].Content != "Goodbye world" {
-		t.Error("Wrong child content")
-	}
-
-	if root.Children[2].Content != "Wakame prototype" {
-		t.Error("Wrong child content")
-	}
+	root := ParseHTML(html)
+	expectedRoot.CompareNode(t, root)
 }

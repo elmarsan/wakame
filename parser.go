@@ -1,9 +1,6 @@
 package wakame
 
-import (
-	"fmt"
-	"strings"
-)
+import "strings"
 
 type Node struct {
 	Tag      string
@@ -20,7 +17,9 @@ func ParseHTML(html string) *Node {
 		Parent:   nil,
 		Children: nil,
 	}
-	nodePtr := &root
+
+	rootInit := false
+	pivot := &root
 
 	i := 0
 	tag := ""
@@ -36,19 +35,18 @@ func ParseHTML(html string) *Node {
 				i++
 			}
 
-			if len((*nodePtr).Tag) == 0 {
-				(*nodePtr).Tag = tag
-				fmt.Printf("Parent <%s> created\n", (*nodePtr).Tag)
-
-			} else if len((*nodePtr).Tag) > 0 && len((*nodePtr).Content) == 0 {
+			if !rootInit {
+				(*pivot).Tag = tag
+				rootInit = true
+			} else {
 				child := &Node{
-					Parent:   *nodePtr,
+					Parent:   *pivot,
 					Children: nil,
 					Tag:      tag,
 				}
 
-				(*nodePtr).Children = append((*nodePtr).Children, child)
-				fmt.Printf("Child <%s> of <%s> added\n", tag, (*nodePtr).Tag)
+				(*pivot).Children = append((*pivot).Children, child)
+				pivot = &child
 			}
 
 			tag = ""
@@ -62,19 +60,23 @@ func ParseHTML(html string) *Node {
 					i++
 				}
 
-				if len((*nodePtr).Tag) == 0 {
-					(*nodePtr).Content = content
-					fmt.Printf("Setting parent content <%s>%s<%s>\n", (*nodePtr).Tag, (*nodePtr).Content, (*nodePtr).Tag)
-
-				} else if len((*nodePtr).Tag) > 0 && len((*nodePtr).Content) == 0 {
-					child := (*nodePtr).Children[len((*nodePtr).Children)-1]
-					child.Content = content
-
-					fmt.Printf("Setting child content <%s>%s<%s>\n", (*child).Tag, (*child).Content, (*child).Tag)
-				}
-
+				(*pivot).Content = content
 				content = ""
 			}
+		}
+
+		// Tag end
+		if html[i] == '<' && html[i+1] == '/' {
+			i += 2
+
+			for html[i] != '>' {
+				tag += string(html[i])
+				i++
+			}
+
+			parent := (*pivot).Parent
+			pivot = &parent
+			tag = ""
 		}
 
 		i++

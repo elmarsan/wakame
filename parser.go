@@ -1,12 +1,16 @@
 package wakame
 
-import "strings"
+import (
+	"regexp"
+	"strings"
+)
 
 type Node struct {
-	Tag      string
-	Content  string
-	Parent   *Node
-	Children []*Node
+	Tag        string
+	Content    string
+	Parent     *Node
+	Children   []*Node
+	Attributes map[string]interface{}
 }
 
 func ParseHTML(html string) *Node {
@@ -37,17 +41,34 @@ func ParseHTML(html string) *Node {
 
 			selfClosing := tag[len(tag)-1:] == "/"
 			if selfClosing {
-				tag = tag[:len(tag)-1]
+				tag = strings.TrimSpace(tag[:len(tag)-1])
+			}
+
+			// Extract tag type
+			tagTypeRe := regexp.MustCompile(`<(\w+).*>`)
+			tagType := tagTypeRe.FindStringSubmatch("<" + tag + ">")[1]
+
+			// Extract attributes of tag
+			attributesRe := regexp.MustCompile(`(?P<name>\w+)\s*=\s*"(?P<value>[^"]*)"`)
+			rawAttributes := attributesRe.FindAllStringSubmatch(tag, -1)
+
+			attributes := map[string]interface{}{}
+			for _, attr := range rawAttributes {
+				key := attr[1]
+				val := attr[2]
+				attributes[key] = val
 			}
 
 			if !rootInit {
-				(*pivot).Tag = tag
+				(*pivot).Tag = tagType
+				(*pivot).Attributes = attributes
 				rootInit = true
 			} else {
 				child := &Node{
-					Parent:   *pivot,
-					Children: nil,
-					Tag:      strings.TrimSpace(tag),
+					Parent:     *pivot,
+					Children:   nil,
+					Tag:        tagType,
+					Attributes: attributes,
 				}
 
 				(*pivot).Children = append((*pivot).Children, child)

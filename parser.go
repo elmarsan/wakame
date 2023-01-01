@@ -35,6 +35,11 @@ func ParseHTML(html string) *Node {
 				i++
 			}
 
+			selfClosing := tag[len(tag)-1:] == "/"
+			if selfClosing {
+				tag = tag[:len(tag)-1]
+			}
+
 			if !rootInit {
 				(*pivot).Tag = tag
 				rootInit = true
@@ -42,11 +47,14 @@ func ParseHTML(html string) *Node {
 				child := &Node{
 					Parent:   *pivot,
 					Children: nil,
-					Tag:      tag,
+					Tag:      strings.TrimSpace(tag),
 				}
 
 				(*pivot).Children = append((*pivot).Children, child)
-				pivot = &child
+
+				if !selfClosing {
+					pivot = &child
+				}
 			}
 
 			tag = ""

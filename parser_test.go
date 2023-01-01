@@ -1,6 +1,8 @@
 package wakame
 
-import "testing"
+import (
+	"testing"
+)
 
 type NodeTestCase struct {
 	content  string
@@ -196,5 +198,43 @@ func TestDepthLevelThree(t *testing.T) {
 	}
 
 	root := ParseHTML(html)
+	expectedRoot.CompareNode(t, root)
+}
+
+func TestSelfClosingTag(t *testing.T) {
+	html := `
+		<div>
+			<img/>
+			<p>Paragraph</p>
+			<input />
+			< br/>
+			< br />
+		</div>
+	`
+
+	expectedRoot := NodeTestCase{
+		tag: "div",
+		children: []*NodeTestCase{
+			{
+				tag: "img",
+			},
+			{
+				tag:     "p",
+				content: "Paragraph",
+			},
+			{
+				tag: "input",
+			},
+			{
+				tag: "br",
+			},
+			{
+				tag: "br",
+			},
+		},
+	}
+
+	root := ParseHTML(html)
+	t.Log(root.Children[0])
 	expectedRoot.CompareNode(t, root)
 }

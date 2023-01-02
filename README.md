@@ -15,15 +15,15 @@ Minimalist html parser, it allows you to generate tree structure based in html n
 ```go
 
 html := `
-		<div>
-			<p>Hello world</p>
-			<p>Goodbye world</p>
-			<p color="blue">Wakame prototype</p>
-			<div id="my-img">
-				<img src="https://draxe.com/wp-content/uploads/2018/10/WakameHeader.jpg" class="img-class" alt="Wakame photo" /> 
-			</div>
-		</div>
-	`
+<div>
+	<p>Hello world</p>
+	<p>Goodbye world</p>
+	<p color="blue">Wakame prototype</p>
+	<div id="my-img">
+		<img src="https://draxe.com/wp-content/uploads/2018/10/WakameHeader.jpg" class="img-class" alt="Wakame photo" /> 
+	</div>
+</div>
+`
 
 root := wakame.ParseHTML(html)
 
